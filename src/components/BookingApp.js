@@ -14,27 +14,12 @@ const BookingApp = () => {
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [unavailableTimes, setUnavailableTimes] = useState([]);
-  const [fullyBookedDates, setFullyBookedDates] = useState([]);
 
   useEffect(() => {
     if (selectedDate) {
       fetchUnavailableTimes(selectedDate);
     }
   }, [selectedDate]);
-
-  const fetchFullyBookedDates = async () => {
-    try {
-      const response = await fetch("/api/appointments/fully-booked");
-      const data = await response.json();
-      setFullyBookedDates(data.map((item) => item.date));
-    } catch (error) {
-      console.error("Error fetching fully booked dates:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchFullyBookedDates();
-  }, []);
 
   const fetchUnavailableTimes = async (date) => {
     try {
@@ -43,7 +28,6 @@ const BookingApp = () => {
         throw new Error("Error fetching unavailable times");
       }
       const data = await response.json();
-      console.log("Fetched unavailable times:", data);
       setUnavailableTimes(data.map((appointment) => appointment.time));
     } catch (error) {
       console.error("Error fetching unavailable times", error);
@@ -68,9 +52,7 @@ const BookingApp = () => {
   const isDateDisabled = (date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    const dateString = date.toISOString().split("T")[0];
-    return date < today || fullyBookedDates.includes(dateString);
+    return date < today;
   };
 
   async function saveAppointment(date, time, name, email, phone, note) {
@@ -164,7 +146,6 @@ const BookingApp = () => {
               <Calendar
                 isDateDisabled={isDateDisabled}
                 onDateClick={onDateClick}
-                fullyBookedDates={fullyBookedDates}
               />
               {selectedDate && (
                 <TimeSelection

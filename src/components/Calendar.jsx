@@ -2,17 +2,12 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const Calendar = ({ onDateClick, fullyBookedDates = [] }) => {
+const Calendar = ({ onDateClick }) => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
     onDateClick(date);
-  };
-
-  const isDateFullyBooked = (date) => {
-    const dateString = date.toISOString().split("T")[0];
-    return fullyBookedDates.includes(dateString);
   };
 
   const minDate = new Date();
@@ -25,7 +20,6 @@ const Calendar = ({ onDateClick, fullyBookedDates = [] }) => {
         onChange={handleDateChange}
         inline
         minDate={minDate}
-        filterDate={(date) => !isDateFullyBooked(date)}
       />
     </div>
   );
