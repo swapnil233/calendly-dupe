@@ -3,7 +3,6 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 import Calendar from "./Calendar";
 import TimeSelection from "./TimeSelection";
 import Success from "./Success";
-import { formatTimeTo24Hour } from "../utils";
 
 const BookingApp = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -24,12 +23,13 @@ const BookingApp = () => {
 
   const fetchUnavailableTimes = async (date) => {
     try {
-      const response = await fetch(`/api/appointments/${date}`);
+      const response = await fetch(`/api/appointments/available/${date}`);
       if (!response.ok) {
         throw new Error("Error fetching unavailable times");
       }
-      const times = await response.json();
-      setUnavailableTimes(times);
+      const data = await response.json();
+      console.log("Fetched unavailable times:", data);
+      setUnavailableTimes(data.map((appointment) => appointment.time));
     } catch (error) {
       console.error("Error fetching unavailable times", error);
     }
