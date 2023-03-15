@@ -10,6 +10,26 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.get("/api/appointments", async (req, res) => {
+  const { date } = req.query;
+  const parsedDate = new Date(date);
+
+  try {
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        date: parsedDate,
+      },
+    });
+
+    res.json(appointments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while fetching appointments.",
+    });
+  }
+});
+
 app.get("/api/appointments/available/:date", async (req, res) => {
   const { date } = req.params;
 

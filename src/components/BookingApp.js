@@ -1,20 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import Calendar from "./Calendar";
 import TimeSelection from "./TimeSelection";
 import Success from "./Success";
+import { formatTimeTo24Hour } from "../utils";
 
 const BookingApp = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [appointment, setAppointment] = useState(null);
+  const [bookedAppointments, setBookedAppointments] = useState([]);
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
+  const [unavailableTimes, setUnavailableTimes] = useState([]);
 
-  const onDateClick = (date) => {
+  useEffect(() => {
+    if (selectedDate) {
+      fetchUnavailableTimes(selectedDate);
+    }
+  }, [selectedDate]);
+
+  const fetchUnavailableTimes = async (date) => {
+    try {
+      const response = await fetch(`/api/appointments/${date}`);
+      if (!response.ok) {
+        throw new Error("Error fetching unavailable times");
+      }
+      const times = await response.json();
+      setUnavailableTimes(times);
+    } catch (error) {
+      console.error("Error fetching unavailable times", error);
+    }
+  };
+
+  const onDateClick = async (date) => {
     setSelectedDate(date);
+
+    try {
+      const response = await fetch(
+        `/api/appointments?date=${date.toISOString()}`
+      );
+      const appointments = await response.json();
+      const bookedTimes = appointments.map((appointment) => appointment.time);
+      setBookedAppointments(bookedTimes);
+    } catch (error) {
+      console.error("Error fetching booked appointments", error);
+    }
   };
 
   async function saveAppointment(date, time, name, email, phone, note) {
@@ -110,6 +143,7 @@ const BookingApp = () => {
                 <TimeSelection
                   date={selectedDate}
                   onTimeSelect={handleTimeSelect}
+                  unavailableTimes={unavailableTimes}
                 />
               )}
             </div>

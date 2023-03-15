@@ -1,13 +1,14 @@
 import React, { useState } from "react";
+import {
+  formatTimeTo24Hour,
+  generateTimeSlots,
+  formatTimeTo12Hour,
+} from "../utils";
 import "./TimeSelection.css";
 
-const TimeSelection = ({ date, onTimeSelect }) => {
-  const availableTimes = ["10:00", "11:00", "12:00", "13:00", "14:00"];
+const TimeSelection = ({ date, onTimeSelect, unavailableTimes }) => {
   const [selectedTime, setSelectedTime] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [note, setNote] = useState("");
+  const timeSlots = generateTimeSlots();
 
   const handleTimeClick = (time) => {
     setSelectedTime(time);
@@ -17,22 +18,29 @@ const TimeSelection = ({ date, onTimeSelect }) => {
     onTimeSelect(selectedTime);
   };
 
+  const isTimeUnavailable = (time) => unavailableTimes.includes(time);
+
   return (
     <div className={`sidebar ${date ? "open" : ""}`}>
       <h2>Select a time:</h2>
       <ul className="time-list">
-        {availableTimes.map((time) => (
-          <li key={time}>
-            <button
-              className={`time-button ${
-                selectedTime === time ? "selected" : ""
-              }`}
-              onClick={() => handleTimeClick(time)}
-            >
-              {time}
-            </button>
-          </li>
-        ))}
+        {timeSlots.map((time) => {
+          const time24Hour = formatTimeTo24Hour(time);
+          const isUnavailable = isTimeUnavailable(time24Hour);
+          return (
+            <li key={time}>
+              <button
+                className={`time-button ${
+                  selectedTime === time24Hour ? "selected" : ""
+                } ${isUnavailable ? "unavailable" : ""}`}
+                onClick={() => !isUnavailable && handleTimeClick(time24Hour)}
+                disabled={isUnavailable}
+              >
+                {formatTimeTo12Hour(time24Hour)}
+              </button>
+            </li>
+          );
+        })}
       </ul>
       {selectedTime && (
         <button className="confirm-button" onClick={handleConfirmClick}>
