@@ -14,12 +14,27 @@ const BookingApp = () => {
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [unavailableTimes, setUnavailableTimes] = useState([]);
+  const [fullyBookedDates, setFullyBookedDates] = useState([]);
 
   useEffect(() => {
     if (selectedDate) {
       fetchUnavailableTimes(selectedDate);
     }
   }, [selectedDate]);
+
+  const fetchFullyBookedDates = async () => {
+    try {
+      const response = await fetch("/api/appointments/fully-booked");
+      const data = await response.json();
+      setFullyBookedDates(data.map((item) => item.date));
+    } catch (error) {
+      console.error("Error fetching fully booked dates:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFullyBookedDates();
+  }, []);
 
   const fetchUnavailableTimes = async (date) => {
     try {
@@ -48,6 +63,14 @@ const BookingApp = () => {
     } catch (error) {
       console.error("Error fetching booked appointments", error);
     }
+  };
+
+  const isDateDisabled = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dateString = date.toISOString().split("T")[0];
+    return date < today || fullyBookedDates.includes(dateString);
   };
 
   async function saveAppointment(date, time, name, email, phone, note) {
@@ -138,7 +161,11 @@ const BookingApp = () => {
                   onChange={(e) => setNote(e.target.value)}
                 />
               </div>
-              <Calendar onDateClick={onDateClick} />
+              <Calendar
+                isDateDisabled={isDateDisabled}
+                onDateClick={onDateClick}
+                fullyBookedDates={fullyBookedDates}
+              />
               {selectedDate && (
                 <TimeSelection
                   date={selectedDate}
