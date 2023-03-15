@@ -49,6 +49,27 @@ app.get("/api/appointments/available/:date", async (req, res) => {
   }
 });
 
+app.get("/api/appointments/fully-booked", async (req, res) => {
+  try {
+    const fullyBookedDates = await prisma.$queryRaw`
+      SELECT DATE_FORMAT(date, '%Y-%m-%d') as date
+      FROM (
+        SELECT date, COUNT(*) as count
+        FROM appointment
+        GROUP BY date
+      ) as counts
+      WHERE count >= 9;
+    `;
+
+    res.status(200).json(fullyBookedDates.map((record) => record.date));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while fetching fully booked dates.",
+    });
+  }
+});
+
 app.post("/api/appointments", async (req, res) => {
   const { date, time, name, email, phone, note } = req.body;
 
