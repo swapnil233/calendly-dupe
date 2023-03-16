@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import { Outlet } from "react-router-dom";
 import Calendar from "./Calendar";
 import TimeSelection from "./TimeSelection";
 import Success from "./Success";
 
-const BookingApp = () => {
+const EventBookingApp = ({ eventId }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [appointment, setAppointment] = useState(null);
   const [bookedAppointments, setBookedAppointments] = useState([]);
@@ -57,13 +56,13 @@ const BookingApp = () => {
   };
 
   async function saveAppointment(
+    eventId,
     date,
     time,
     name,
     email,
     phone,
-    note,
-    eventId
+    note
   ) {
     try {
       const response = await fetch("/api/appointments", {
@@ -71,7 +70,7 @@ const BookingApp = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ date, time, name, email, phone, note, eventId }),
+        body: JSON.stringify({ eventId, date, time, name, email, phone, note }),
       });
 
       if (response.status === 409) {
@@ -92,13 +91,13 @@ const BookingApp = () => {
   const handleTimeSelect = async (time) => {
     setSelectedDate(null); // Reset the selected date
     const appointment = await saveAppointment(
-      selectedDate,
+      eventId,
+      selectedDate, // Pass the selected date instead of null
       time,
       name,
       email,
       phone,
-      note,
-      null // Pass null as eventId for regular BookingApp
+      note
     );
 
     if (appointment) {
@@ -172,9 +171,8 @@ const BookingApp = () => {
           element={<Success appointment={appointment} />}
         />
       </Routes>
-      <Outlet />
     </div>
   );
 };
 
-export default BookingApp;
+export default EventBookingApp;

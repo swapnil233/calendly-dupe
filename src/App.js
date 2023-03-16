@@ -1,11 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import BookingApp from "./components/BookingApp";
+import EventBookingApp from "./components/EventBookingApp";
 
 function App() {
+  const eventId = "75ea4324-cba7-46f1-8b9b-d0af40d26481"; // Use the event ID you created
+
   return (
     <Router>
-      <BookingApp />
+      <EventBookingApp eventId={eventId} />
     </Router>
   );
 }

@@ -43,27 +43,45 @@ export const getAvailableAppointments = async (req: Request, res: Response) => {
 };
 
 export const createAppointment = async (req: Request, res: Response) => {
-    const { date, time, name, email, phone, note } = req.body;
+    const { date, time, name, email, phone, note, eventId } = req.body;
+
+    // Explicitly set the date and time
+    const appointmentDate = new Date(date);
+    appointmentDate.setUTCHours(0, 0, 0, 0);
+
+    const startOfDay = new Date(appointmentDate);
+    const endOfDay = new Date(appointmentDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
     try {
         const existingAppointment = await prisma.appointment.findFirst({
             where: {
-                date: new Date(date),
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay,
+                },
                 time,
             },
         });
+
+
 
         if (existingAppointment) {
             res.status(409).json({ message: "This time slot is already booked." });
         } else {
             const appointment = await prisma.appointment.create({
                 data: {
-                    date: new Date(date),
+                    date: appointmentDate,
                     time,
                     name,
                     email,
                     phone,
                     note,
+                    event: {
+                        connect: {
+                            id: eventId,
+                        },
+                    },
                 },
             });
             res.status(201).json(appointment);
